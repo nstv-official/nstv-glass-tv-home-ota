@@ -1,0 +1,603 @@
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+/**
+ * Dynamic 4K dark desktop wallpaper manager.
+ * Fetches high-resolution (3840x2160) atmospheric and moody desktop wallpapers
+ * directly from an online feed or a curated Unsplash 4K catalog.
+ * Caches wallpapers locally for instant loading and offline resilience.
+ */
+final class OnlineWallpapers {
+    private static final String TAG = "TvHome.Online";
+    static final String DIR = "online-wallpapers";
+    private static final String PREFS_NAME = "online_wallpapers";
+    private static final String PREF_LAST_SYNC = "last_sync_time";
+    private static final long REFRESH_INTERVAL_MS = 6L * 60 * 60 * 1000; // 6 hours
+    private static final int MAX_CACHE_FILES = 150;
+    private static final int MAX_IMAGE_BYTES = 25 * 1024 * 1024; // 25 MB limit per 4K/8K image
+
+    static class WallpaperItem {
+        final String url;
+        final String title;
+        final String description;
+        final String category;
+
+        WallpaperItem(String url, String title, String description, String category) {
+            this.url = url;
+            this.title = title;
+            this.description = description;
+            this.category = category;
+        }
+    }
+
+    // Built-in curated catalog of dark, moody, atmospheric 4K desktop wallpapers (Unsplash)
+    private static final WallpaperItem[] CURATED_CATALOG = new WallpaperItem[]{
+            // Indonesia: Landmark & Destinasi Tersohor Nusantara (16 Koleksi 4K Wikimedia Commons)
+            // URL Special:FilePath?width=3840 = file terverifikasi API Wikimedia Commons, diskalakan hingga 4K.
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Borobudur%2C_panor%C3%A1micas_%281998%29_03.jpg?width=3840",
+                    "Candi Borobudur saat Fajar", "Panorama candi Buddha terbesar di dunia, Magelang Jawa Tengah, khazanah warisan dunia UNESCO", "Indonesia_JawaTengah"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Yogyakarta_Indonesia_Prambanan-temple-complex-21.jpg?width=3840",
+                    "Candi Prambanan Yogyakarta", "Kompleks candi Hindu megah dengan puncak-puncak runcing menjulang langit senja", "Indonesia_Yogyakarta"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Piaynemo_Raja_Ampat.jpg?width=3840",
+                    "Kepulauan Pianemo Raja Ampat", "Bentang karst tropis menghijau di atas laut biru jernih, surga bawah laut Papua Barat", "Indonesia_Papua"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Labuan_Bajo_%2816931903048%29.jpg?width=3840",
+                    "Teluk Labuan Bajo Komodo", "Perairan tenang Pulau Komodo dengan gugusan bukit kering dan kapal-kapal phinisi", "Indonesia_NTT"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Mount_Bromo_Sunrise_Right.jpg?width=3840",
+                    "Matahari Terbit Gunung Bromo", "Panorama luas lautan pasir dan kepulan asap kawah Gunung Bromo waktu subuh", "Indonesia_JawaTimur"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Tegallalang_Rice_Terraces_Bali.jpg?width=3840",
+                    "Terasering Sawah Tegallalang", "Undak sawah hijau melengkung khas Ubud Bali di bawah cahaya tropis", "Indonesia_Bali"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/View_of_Lake_Toba_from_Bukit_Senyum_Motung%2C_Ajibata%2C_Toba%2C_North_Sumatra.jpg?width=3840",
+                    "Danau Toba dari Bukit Senyum", "Danau vulkanik terbesar se-Asia Tenggara dengan Pulau Samosir di tengahnya", "Indonesia_SumateraUtara"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Monumen_Nasional%2C_Jakarta%2C_Indonesia.jpg?width=3840",
+                    "Monumen Nasional Jakarta", "Tugu Monas berlapis emas berdiri gagah di pusat Ibu Kota Negara", "Indonesia_Jakarta"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Jakarta_-_Istiqlal_Mosque%2C_interior.jpg?width=3840",
+                    "Masjid Istiqlal Jakarta", "Keagungan kubah raksasa masjid nasional terbesar di Asia Tenggara", "Indonesia_Jakarta"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/KEL_-_Kelimutu_crater_lakes_in_early_morning%2C_Flores%2C_Indonesia%2C_2019.jpg?width=3840",
+                    "Danau Tiga Warna Kelimutu", "Danau kawah warna-warni yang berubah warna di puncak Gunung Kelibara, Flores", "Indonesia_NTT"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Mount_Rinjani_Panorama.jpg?width=3840",
+                    "Panorama Gunung Rinjani", "Gunung berapi tertinggi kedua Indonesia dengan kaldera luas di Lombok", "Indonesia_NTB"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Tana_Toraja%2C_Kete_Kesu%2C_tongkonan_%286823189476%29.jpg?width=3840",
+                    "Tongkonan Kete Kesu Toraja", "Rumah adat Tongkonan berjajar ikonik di antara sawah hijau Tana Toraja", "Indonesia_SulawesiSelatan"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Pantai_Tanjung_Tinggi.jpg?width=3840",
+                    "Pantai Tanjung Tinggi Belitung", "Batu-batu granit raksasa di pantai berpasir putih tempat syuting Laskar Pelangi", "Indonesia_Belitung"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Aerial_of_Derawan_2017-09-16.jpg?width=3840",
+                    "Pulau Derawan Kalimantan", "Pulau kecil berpasir putih dengan gradasi laut toska dari sudut pandang udara", "Indonesia_Kalimantan"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Kawah_Ijen_%2848140807781%29.jpg?width=3840",
+                    "Api Biru Kawah Ijen", "Fenomena api biru (blue fire) langka di kawah gunung berapi Jawa Timur", "Indonesia_JawaTimur"),
+            new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Jakarta_Indonesia_Business-in-Kota-Jakarta-01.jpg?width=3840",
+                    "Kota Tua Jakarta", "Gedung-gedung kolonial Belanda di kawasan kota tua bersejarah Jakarta", "Indonesia_Jakarta"),
+
+            // Nature & Landscapes (Alam & Lanskap - Pexels & Unsplash 4K)
+            new WallpaperItem("https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Moody Alpine Mountains", "Silhouetted mountain peaks under starry skies", "Landscape"),
+            new WallpaperItem("https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Moody Mountain Fog", "Mist rolling through dense mountain evergreen pine forest", "Landscape"),
+            new WallpaperItem("https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Aurora Borealis", "Green atmospheric aurora dancing across arctic skies", "Nature"),
+            new WallpaperItem("https://images.pexels.com/photos/1624496/pexels-photo-1624496.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Starry Night Over Pines", "Bright starry cosmos illuminating tall silhouette pine forest", "Nature"),
+            new WallpaperItem("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Misty Pine Forest", "Dense evergreen canopy cloaked in rolling fog", "Forest"),
+            new WallpaperItem("https://images.pexels.com/photos/1287145/pexels-photo-1287145.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Serene Alpine Twilight", "Calm dusk sky casting reflections across quiet mountain lake", "Nature"),
+            new WallpaperItem("https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Moody Lake Twilight", "Still dark waters reflecting misty mountain ridges", "Landscape"),
+            new WallpaperItem("https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Desert Dunes", "Shadows sweeping over desert dunes under the night sky", "Desert"),
+            new WallpaperItem("https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Majestic Snow Mountain Peak", "Crisp dramatic snow ridges against deep blue atmosphere", "Mountains"),
+            new WallpaperItem("https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Volcanic Landscape", "Black volcanic terrain and quiet minimalist horizon", "Nature"),
+
+            // Cityscape & Architecture (Pencakar Langit & Kota - Pexels & Unsplash 4K)
+            new WallpaperItem("https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Tokyo Cyberpunk Alley", "Moody neon reflections in a narrow Tokyo alleyway", "Cityscape"),
+            new WallpaperItem("https://images.pexels.com/photos/374870/pexels-photo-374870.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Metropolis Skyline Twilight", "Glowing skyscrapers towering over serene bay water", "Cityscape"),
+            new WallpaperItem("https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Neon Rain Street", "Vibrant reflections shimmering on wet asphalt", "Cityscape"),
+            new WallpaperItem("https://images.pexels.com/photos/3052361/pexels-photo-3052361.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Modern Glass Skyscraper", "Geometric glass architectural patterns rising into sky", "Architecture"),
+            new WallpaperItem("https://images.pexels.com/photos/169647/pexels-photo-169647.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Cyberpunk Neon Night", "Futuristic high-density city streets glowing in vibrant magenta", "Cityscape"),
+            new WallpaperItem("https://images.unsplash.com/photo-1494548162494-384bba4ab999?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Foggy Suspension Bridge", "Golden Gate towers emerging through evening fog", "Architecture"),
+
+            // Space & Astronomy (Antariksa & Kosmos - Unsplash 4K)
+            new WallpaperItem("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Night Earth Orbit", "Planet Earth illuminated at night from outer space", "Space"),
+            new WallpaperItem("https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Milky Way Galaxy", "Deep night sky filled with stellar constellations", "Astronomy"),
+            new WallpaperItem("https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Deep Space Nebula", "Cosmic interstellar gas clouds and distant stars", "Cosmos"),
+            new WallpaperItem("https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Cosmic Dark Starfield", "Deep black void speckled with distant galaxies", "Space"),
+
+            // Ocean & Water (Lautan & Pantai - Pexels & Unsplash 4K)
+            new WallpaperItem("https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Deep Underwater Abyss", "Sunlight penetrating into the dark deep ocean", "Underwater"),
+            new WallpaperItem("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Midnight Ocean Waves", "Deep blue waves crashing on a tranquil dark shore", "Oceans"),
+            new WallpaperItem("https://images.pexels.com/photos/1001682/pexels-photo-1001682.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Deep Ocean Wave Crest", "Powerful sea water curling in turquoise deep shades", "Oceans"),
+            new WallpaperItem("https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Tropical Turquoise Deep Water", "Aerial view of calm ocean reef gradient", "Oceans"),
+            new WallpaperItem("https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Dark Ocean Trench", "Bioluminescent glow illuminating the deep ocean", "Underwater"),
+            new WallpaperItem("https://images.pexels.com/photos/1295138/pexels-photo-1295138.jpeg?auto=compress&cs=tinysrgb&w=3840&h=2160",
+                    "Dramatic Sea Cliffs", "Dark oceanic cliffs meeting moody breaking waves", "Coast"),
+
+            // Minimalist & Atmospheric (Minimalis Gelap OLED - Unsplash 4K Curated from https://unsplash.com/s/photos/dark-wallpaper)
+            new WallpaperItem("https://images.unsplash.com/photo-1484950763426-56b5bf172dbb?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Siluet Kendaraan 4x4", "Siluet kendaraan penggerak empat roda di bawah hamparan bintang malam yang sepi", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1533134486753-c833f0ed4866?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Gelombang Pasir Kelabu", "Lengkungan pasir kelabu berkabut di pesisir pantai Karekare, Selandia Baru", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1762417108293-91614140073a?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Tekstur Silinder Hitam OLED", "Permukaan silinder hitam 3D bertekstur gelap minimalis", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1507752533523-5186b0bc4c43?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Pencakar Langit Senja Emas", "Panorama kota metropolitan Montreal disinari bias cahaya senja keemasan", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Malam Bintang Kebiruan", "Keindahan galaksi dan gugusan bintang kebiruan di balik jurang batu", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1509023464722-18d996393ca8?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Gunung Fuji & Danau Senyap", "Siluet Gunung Fuji di keheningan malam danau Jepang berlatar langit gelap pekat", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1491466424936-e304919aada7?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Gelombang Pasir Hitam OLED", "Lengkungan bukit pasir hitam minimalis dengan kontras bayangan sempurna", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1622737133809-d95047b9e673?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Geometri Poligon Gelap", "Geometri 3D monokrom berdimensi tinggi untuk layar OLED", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Aliran Cairan Hitam Sutra", "Gelombang cairan hitam berkilau mengalir anggun dalam kegelapan mutlak", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Grid Gelap Minimalis", "Struktur garis perspektif modern berlatar hitam pekat", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1507499739999-097706ad8914?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Gerbang Monolit Malam", "Arsitektur beton minimalis menjulang di bawah pekatnya malam sunyi", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Kabut Pegunungan Monokrom", "Barisan gunung berkabut tebal dalam rona hitam putih dramatis", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Sirkuit Sibernetik Gelap", "Papan sirkuit teknologi canggih dengan pencahayaan gelap minimalis", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Hamburan Pigmen Gelap", "Ledakan partikel debu hitam arang bertekstur tinggi dan halus", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Kanvas Arang Klasik", "Tekstur lukisan minyak gelap berona arang monokrom", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Bumi Malam & Orbit Hitam", "Cakrawala biru Bumi di tengah kekosongan luar angkasa hitam pekat", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Siluet Daun Monstera", "Daun tropis gelap berlatar bayangan hitam misterius", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Prisma Cahaya Gelap", "Spektrum cahaya neon halus di ruang kegelapan mutlak", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Tekstur Hitam Murni OLED", "Latar permukaan hitam arang minimalis khusus untuk menghemat piksel OLED", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Gurun Basalt Hitam", "Tanah hitam gunung berapi dengan garis cakrawala yang tenang dan redup", "Minimalist_OLED"),
+            new WallpaperItem("https://images.unsplash.com/photo-1491557345352-5929e343eb89?auto=format&fit=crop&w=3840&h=2160&q=80",
+                    "Puncak Gunung Obsidian", "Puncak batu gunung tajam menembus awan badai hitam dramatis", "Minimalist_OLED")
+    };
+
+    private OnlineWallpapers() {
+    }
+
+    static File dir(Context ctx) {
+        File base = Config.dir(ctx);
+        return base != null ? new File(base, DIR) : null;
+    }
+
+    /** Returns all valid downloaded 4K wallpapers in sorted order. */
+    static List<File> list(Context ctx) {
+        List<File> out = new ArrayList<>();
+        File d = dir(ctx);
+        File[] files = d != null ? d.listFiles() : null;
+        if (files == null) return out;
+        for (File f : files) {
+            if (f.isFile() && f.length() > 0) {
+                String name = f.getName().toLowerCase(Locale.ROOT);
+                if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png")) {
+                    out.add(f);
+                }
+            }
+        }
+        Collections.sort(out);
+        return out;
+    }
+
+    public static boolean matchesCategory(String itemCat, String selectedCat) {
+        if (selectedCat == null || selectedCat.isEmpty() || "All".equalsIgnoreCase(selectedCat)) return true;
+        if (itemCat == null) return false;
+        String ic = itemCat.toLowerCase(Locale.ROOT);
+        String sc = selectedCat.toLowerCase(Locale.ROOT);
+        if (sc.startsWith("indonesia_")) {
+            String province = sc.substring("indonesia_".length());
+            return ic.contains(province);
+        }
+        if (sc.equals("indonesia") || sc.equals("indonesia_all")) {
+            return ic.contains("indonesia");
+        }
+        if (sc.contains("sky") || sc.contains("arch") || sc.contains("city")) {
+            return ic.contains("sky") || ic.contains("arch") || ic.contains("city") || ic.contains("urban");
+        }
+        if (sc.contains("nat") || sc.contains("land")) {
+            return ic.contains("nat") || ic.contains("land") || ic.contains("mount") || ic.contains("forest") || ic.contains("desert");
+        }
+        if (sc.contains("space") || sc.contains("cosmo") || sc.contains("astro")) {
+            return ic.contains("space") || ic.contains("astro") || ic.contains("cosmo");
+        }
+        if (sc.contains("ocean") || sc.contains("water") || sc.contains("coast")) {
+            return ic.contains("ocean") || ic.contains("underwater") || ic.contains("coast");
+        }
+        if (sc.contains("minim") || sc.contains("oled") || sc.contains("dark")) {
+            return ic.contains("minim") || ic.contains("oled") || ic.contains("dark") || ic.contains("atmos") || ic.contains("weather");
+        }
+        if (sc.contains("indonesia")) {
+            return ic.contains("indonesia");
+        }
+        return ic.contains(sc);
+    }
+
+    static void cleanOutdatedCategoryWallpapers(File d, String category) {
+        if (d == null || !d.exists()) return;
+        Set<String> validHashes = new HashSet<>();
+        for (WallpaperItem item : CURATED_CATALOG) {
+            if (matchesCategory(item.category, category)) {
+                validHashes.add(hashFilename(item.url));
+            }
+        }
+        File[] files = d.listFiles((dir, name) -> name.endsWith(".jpg"));
+        if (files == null) return;
+        for (File f : files) {
+            String base = f.getName().replace(".jpg", "");
+            if (!validHashes.contains(base)) {
+                String[] desc = describe(f);
+                if (desc != null && desc.length >= 3 && matchesCategory(desc[2], category)) {
+                    f.delete();
+                    File txt = new File(d, base + ".txt");
+                    if (txt.exists()) txt.delete();
+                    Log.i(TAG, "Removed outdated " + category + " wallpaper: " + f.getName());
+                }
+            }
+        }
+    }
+
+    static List<File> listByCategory(Context ctx, String category) {
+        File d = dir(ctx);
+        if (d != null && d.exists()) {
+            cleanOutdatedCategoryWallpapers(d, category);
+        }
+        List<File> all = list(ctx);
+        if (category == null || category.equalsIgnoreCase("All")) return all;
+        List<File> filtered = new ArrayList<>();
+        for (File f : all) {
+            String[] desc = describe(f);
+            if (desc != null && desc.length >= 3) {
+                if (matchesCategory(desc[2], category)) {
+                    filtered.add(f);
+                }
+            }
+        }
+        return filtered;
+    }
+
+    static boolean syncCategory(Context ctx, String category) {
+        File d = dir(ctx);
+        if (d == null) return false;
+        if (!d.exists() && !d.mkdirs()) return false;
+
+        cleanOutdatedCategoryWallpapers(d, category);
+
+        List<WallpaperItem> candidates = new ArrayList<>();
+        for (WallpaperItem item : CURATED_CATALOG) {
+            if (matchesCategory(item.category, category)) {
+                candidates.add(item);
+            }
+        }
+        if (candidates.isEmpty()) return false;
+
+        boolean anyDownloaded = false;
+        int targetNew = candidates.size();
+        int count = 0;
+
+        for (WallpaperItem item : candidates) {
+            if (count >= targetNew) break;
+            String fileName = hashFilename(item.url) + ".jpg";
+            File targetFile = new File(d, fileName);
+            if (targetFile.exists() && targetFile.length() > 50_000) {
+                continue;
+            }
+
+            File tempFile = new File(d, fileName + ".tmp");
+            File tempTxt = new File(d, fileName.replace(".jpg", ".txt") + ".tmp");
+            try {
+                if (downloadUrlToFile(item.url, tempFile)) {
+                    String meta = (item.title != null ? item.title : "4K Wallpaper") + "\n"
+                            + (item.description != null ? item.description : "") + "\n"
+                            + (item.category != null ? item.category : category);
+                    try (OutputStream os = new FileOutputStream(tempTxt)) {
+                        os.write(meta.getBytes(StandardCharsets.UTF_8));
+                    }
+                    File finalTxt = new File(d, fileName.replace(".jpg", ".txt"));
+                    if (tempFile.renameTo(targetFile)) {
+                        tempTxt.renameTo(finalTxt);
+                        anyDownloaded = true;
+                        count++;
+                        Log.i(TAG, "Saved category wallpaper [" + category + "]: " + item.title);
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed downloading " + item.url + ": " + e);
+            } finally {
+                if (tempFile.exists()) tempFile.delete();
+                if (tempTxt.exists()) tempTxt.delete();
+            }
+        }
+        return anyDownloaded;
+    }
+
+    /** Returns true if sync is needed (empty local pool or refresh interval elapsed). */
+    static boolean due(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        long last = sp.getLong(PREF_LAST_SYNC, 0);
+        return list(ctx).isEmpty() || (System.currentTimeMillis() - last >= REFRESH_INTERVAL_MS);
+    }
+
+    /**
+     * Reads companion .txt file (same name as picture with .txt extension).
+     * Line 1: Title
+     * Line 2: Description / Overview
+     * Line 3: Category / Source
+     */
+    static String[] describe(File picture) {
+        if (picture == null) return null;
+        String name = picture.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) return null;
+        File text = new File(picture.getParentFile(), name.substring(0, dot) + ".txt");
+        if (!text.isFile() || text.length() == 0 || text.length() > 8192) return null;
+        try (BufferedReader r = new BufferedReader(
+                new InputStreamReader(new FileInputStream(text), StandardCharsets.UTF_8))) {
+            String title = r.readLine();
+            if (title == null || title.trim().isEmpty()) return null;
+            String desc = r.readLine();
+            String cat = r.readLine();
+            return new String[]{
+                    title.trim(),
+                    desc == null ? "" : desc.trim(),
+                    cat == null ? "" : cat.trim()
+            };
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Synchronizes wallpapers from an online feed or the built-in curated catalog.
+     * Downloads on the caller's thread; call from a background thread.
+     * Returns true if one or more fresh pictures were added to the local pool.
+     */
+    static boolean sync(Context ctx, String feedUrl) {
+        File d = dir(ctx);
+        if (d == null) return false;
+        if (!d.exists() && !d.mkdirs()) return false;
+
+        List<WallpaperItem> items = new ArrayList<>();
+        if (feedUrl != null && !feedUrl.trim().isEmpty()) {
+            List<WallpaperItem> remote = fetchFeed(feedUrl.trim());
+            if (remote != null && !remote.isEmpty()) {
+                items.addAll(remote);
+                Log.i(TAG, "Loaded " + items.size() + " wallpapers from remote feed: " + feedUrl);
+            }
+        }
+
+        // If no remote items, use the curated catalog
+        if (items.isEmpty()) {
+            Collections.addAll(items, CURATED_CATALOG);
+        }
+
+        // Shuffle candidate pool so rotation changes over time
+        List<WallpaperItem> pool = new ArrayList<>(items);
+        Collections.shuffle(pool);
+
+        boolean anyDownloaded = false;
+        int targetNew = 5; // Download up to 5 fresh pictures per sync
+        int downloadedCount = 0;
+
+        for (WallpaperItem item : pool) {
+            if (downloadedCount >= targetNew) break;
+            String fileName = hashFilename(item.url) + ".jpg";
+            File targetFile = new File(d, fileName);
+            if (targetFile.exists() && targetFile.length() > 50_000) {
+                continue; // Already cached
+            }
+
+            File tempFile = new File(d, fileName + ".tmp");
+            File tempTxt = new File(d, fileName.replace(".jpg", ".txt") + ".tmp");
+            try {
+                if (downloadUrlToFile(item.url, tempFile)) {
+                    // Write metadata
+                    String meta = (item.title != null ? item.title : "4K Wallpaper") + "\n"
+                            + (item.description != null ? item.description : "") + "\n"
+                            + (item.category != null ? item.category : "Desktop");
+                    try (OutputStream os = new FileOutputStream(tempTxt)) {
+                        os.write(meta.getBytes(StandardCharsets.UTF_8));
+                    }
+
+                    File finalTxt = new File(d, fileName.replace(".jpg", ".txt"));
+                    if (tempFile.renameTo(targetFile)) {
+                        tempTxt.renameTo(finalTxt);
+                        anyDownloaded = true;
+                        downloadedCount++;
+                        Log.i(TAG, "Saved 4K wallpaper: " + item.title + " (" + targetFile.length() + " bytes)");
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "Failed downloading " + item.url + ": " + e);
+            } finally {
+                if (tempFile.exists()) tempFile.delete();
+                if (tempTxt.exists()) tempTxt.delete();
+            }
+        }
+
+        // Prune old files if cache exceeds maximum allowed files
+        pruneCache(d);
+
+        ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putLong(PREF_LAST_SYNC, System.currentTimeMillis())
+                .apply();
+
+        return anyDownloaded;
+    }
+
+    private static String hashFilename(String url) {
+        return "online_" + Math.abs(url.hashCode());
+    }
+
+    private static boolean downloadUrlToFile(String strUrl, File dest) {
+        HttpURLConnection conn = null;
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            URL url = new URL(strUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(10_000);
+            conn.setReadTimeout(15_000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 10; TV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 GlassTV/4.0.1 (https://github.com/nstv-official/nstv-glass-tv-home-ota)");
+            conn.setInstanceFollowRedirects(true);
+            conn.connect();
+
+            int code = conn.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                Log.w(TAG, "HTTP " + code + " for " + strUrl);
+                return false;
+            }
+
+            in = conn.getInputStream();
+            out = new FileOutputStream(dest);
+            byte[] buf = new byte[8192];
+            int read;
+            long total = 0;
+            while ((read = in.read(buf)) != -1) {
+                total += read;
+                if (total > MAX_IMAGE_BYTES) {
+                    Log.w(TAG, "Image exceeds byte limit, aborting: " + strUrl);
+                    return false;
+                }
+                out.write(buf, 0, read);
+            }
+            out.flush();
+            return total > 10_000;
+        } catch (Exception e) {
+            Log.w(TAG, "Download error: " + e.getMessage());
+            return false;
+        } finally {
+            try { if (in != null) in.close(); } catch (Exception ignored) {}
+            try { if (out != null) out.close(); } catch (Exception ignored) {}
+            if (conn != null) conn.disconnect();
+        }
+    }
+
+    private static List<WallpaperItem> fetchFeed(String feedUrl) {
+        List<WallpaperItem> list = new ArrayList<>();
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(feedUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(8_000);
+            conn.setReadTimeout(10_000);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (GlassTV; Android)");
+            conn.connect();
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) return list;
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) sb.append(line);
+            reader.close();
+
+            String raw = sb.toString().trim();
+            if (raw.startsWith("[")) {
+                JSONArray arr = new JSONArray(raw);
+                for (int i = 0; i < arr.length(); i++) {
+                    Object o = arr.get(i);
+                    if (o instanceof String) {
+                        list.add(new WallpaperItem((String) o, "Online Wallpaper", "", "Web Server"));
+                    } else if (o instanceof JSONObject) {
+                        JSONObject obj = (JSONObject) o;
+                        String u = obj.optString("url");
+                        if (!u.isEmpty()) {
+                            list.add(new WallpaperItem(
+                                    u,
+                                    obj.optString("title", "Online Wallpaper"),
+                                    obj.optString("description", ""),
+                                    obj.optString("category", "Web Server")));
+                        }
+                    }
+                }
+            } else if (raw.startsWith("{")) {
+                JSONObject obj = new JSONObject(raw);
+                JSONArray arr = obj.optJSONArray("wallpapers");
+                if (arr == null) arr = obj.optJSONArray("images");
+                if (arr != null) {
+                    for (int i = 0; i < arr.length(); i++) {
+                        Object o = arr.get(i);
+                        if (o instanceof String) {
+                            list.add(new WallpaperItem((String) o, "Online Wallpaper", "", "Web Server"));
+                        } else if (o instanceof JSONObject) {
+                            JSONObject item = (JSONObject) o;
+                            String u = item.optString("url");
+                            if (!u.isEmpty()) {
+                                list.add(new WallpaperItem(
+                                        u,
+                                        item.optString("title", "Online Wallpaper"),
+                                        item.optString("description", ""),
+                                        item.optString("category", "Web Server")));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Feed parse error: " + e);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+        return list;
+    }
+
+    private static void pruneCache(File dir) {
+        File[] files = dir.listFiles((d, name) -> name.endsWith(".jpg"));
+        if (files == null || files.length <= MAX_CACHE_FILES) return;
+
+        List<File> list = new ArrayList<>();
+        Collections.addAll(list, files);
+        // Sort oldest first
+        Collections.sort(list, (a, b) -> Long.compare(a.lastModified(), b.lastModified()));
+
+        int toRemove = list.size() - MAX_CACHE_FILES;
+        for (int i = 0; i < toRemove; i++) {
+            File f = list.get(i);
+            File txt = new File(dir, f.getName().replace(".jpg", ".txt"));
+            f.delete();
+            if (txt.exists()) txt.delete();
+        }
+    }
+}
