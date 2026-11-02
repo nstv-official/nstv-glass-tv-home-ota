@@ -9,7 +9,7 @@ and come home to just your apps, with a new place to visit behind them every wee
 
 <p align="center">
   <a href="https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk">
-    <img src="https://img.shields.io/badge/Download_TV_Launcher-glass--tv--home.apk_(v4.0.1)-success?style=for-the-badge&logo=android" alt="Download Glass TV Home">
+    <img src="https://img.shields.io/badge/Download_TV_Launcher-glass--tv--home.apk_(v4.0.2)-success?style=for-the-badge&logo=android" alt="Download Glass TV Home">
   </a>
   &nbsp;
   <a href="https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk">
@@ -28,7 +28,7 @@ and come home to just your apps, with a new place to visit behind them every wee
 > 2. 📱 **Metode 2 (Tanpa PC — Aplikasi Android di Ponsel)**: Pasang [**`release/glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) di ponsel Anda. Hubungkan ke Wi-Fi yang sama, lalu tekan *Pasang Langsung ke TV* untuk mengunci tombol Home dalam 1 klik tanpa komputer!
 
 > 📦 **Official APK Downloads**:
-> - 📺 **Android TV / Google TV Launcher**: [**`release/glass-tv-home.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) (**v4.0.1** • ~800 KB)
+> - 📺 **Android TV / Google TV Launcher**: [**`release/glass-tv-home.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) (**v4.0.2** • ~1.6 MB)
 > - 📱 **Phone / Tablet Companion Installer**: [**`release/glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (**v1.0.0** • ~5.2 MB) — Kunci tombol Home TV langsung dari ponsel tanpa PC!
 >
 > 🤖 **AI Prompt & Audit Guide**:
@@ -50,6 +50,27 @@ every week.
   <img src="docs/screenshots/screensaver-live.png" width="19%" alt="StandBy Screensaver">
   <img src="docs/screenshots/wallpaper-dialog-live.png" width="19%" alt="4K Wallpapers & Phone QR Upload">
 </p>
+
+## What's New in Version 4.0.2
+
+- **StandBy Screensaver, Now a Real Setting.** The screensaver is no longer a plain black clock on an empty
+  screen. A new **Mode StandBy** tab in Settings (`⚙️`) drives everything on it, and the choices are stored on the
+  TV, so they survive reboots and updates:
+  - **4 clock styles**: *Digital Terpusat* (big centred numerals), *Analog Minimalis* (a hand-drawn dial with a
+    ring showing how much of the day has passed), *Editorial Kiri* (light left-aligned typography) and
+    *Bento Widget* (frosted cards for clock, weather, Hijri date and prayer).
+  - **3 backgrounds**: today's wallpaper softened into frosted glass (the new default), an *aurora* glow whose
+    colour follows the hour, or pure black OLED for panels that want the lowest power draw.
+  - **Elements you can switch on or off**: the glass card, the date, the Hijri date, the next-prayer capsule,
+    the weather line and the "press any key" hint.
+  - **Format, size and dimming**: 12 or 24 hours (or follow the TV), four digit sizes from 80sp to 170sp, and
+    four dim levels, plus the red night wind-down mode on automatic, always, or never.
+  - **Timing**: how long the TV must be idle before the screensaver appears, how much longer before it truly
+    sleeps, and how often the clock drifts to protect an OLED panel.
+  - Both paths — the overlay inside Home and the system screensaver (`DreamService`) — are now drawn by the same
+    code, so a choice made in Settings looks identical either way.
+- **Language Cleanup.** Remaining Malay wording in the interface (such as `SEMASA`) is now Indonesian, and the
+  Indonesian landmark labels read *Terkenal* instead of *Tersohor*.
 
 ## What's New in Version 4.0
 
@@ -77,8 +98,13 @@ every week.
   - 6-phase timetable (Subuh, Syuruq, Dzuhur, Ashar, Maghrib, Isya) with emerald highlighting for the active prayer window.
   - Daily Quranic Ayat of the Day with Arabic calligraphy and translations.
 - **StandBy Ambient Mode & Smart Energy Lifecycle.**
-  - **10 Minutes Idle**: Automatically engages an ambient StandBy screensaver with large 110sp numerals, Islamic Hijri calendar, next prayer capsule, and a late-night red monochrome wind-down mode.
-  - **2 Hours Later**: Automatically turns off the TV display into deep sleep standby via Android's Accessibility Service (`GLOBAL_ACTION_LOCK_SCREEN`).
+  - **Idle, then screensaver**: after the pause you choose (10 minutes by default) an ambient StandBy screensaver
+    appears — clock, Islamic Hijri calendar, next prayer capsule and weather, over a frosted card and a softened
+    wallpaper — with a late-night red monochrome wind-down mode.
+  - **Every part is configurable** from *Settings (`⚙️`) → Mode StandBy*: style, background, elements, clock format,
+    digit size, dimming and timing.
+  - **Later, the TV sleeps**: after the extra pause you choose (2 hours by default) the display turns off into deep
+    standby via Android's Accessibility Service (`GLOBAL_ACTION_LOCK_SCREEN`).
 - **Frosted Glass Settings Dropdown & 4K Wallpaper Categories.**
   - **Floating Glass Dropdown**: Clicking the top Settings icon (`⚙️`) opens a native Apple tvOS-style glass menu under the button.
   - **Dynamic 4K Wallpaper Switcher**: Switch themes on the fly between *Natural*, *🇮🇩 Landmark & Destinasi Terkenal Indonesia*, *Pencakar Langit & Kota* (Jakarta, Manhattan, Chicago, Dubai, HK), *Luar Angkasa & Kosmos*, *Lautan & Pesisir Pantai*, or trigger *Next Wallpaper*.
@@ -125,8 +151,10 @@ every week.
 - **Comes back as you left it.** Back from an app, the app you left is still selected; pressing Home on Home
   goes to the first app. When Android has closed Home to free memory, it comes back whole in one frame,
   with no black screen and no half-built dock.
-- **A StandBy clock screensaver.** A sleek, high-contrast OLED digital nightstand clock with 110sp digits,
-  Islamic Hijri calendar, next prayer countdown capsule, and gentle minute-by-minute drift to prevent burn-in.
+- **A StandBy clock screensaver you can shape.** Four styles (digital, analog dial, editorial, bento cards),
+  three backgrounds (softened wallpaper, aurora by hour, black OLED), a glass card, date, Hijri calendar and
+  prayer capsule, four dim levels, and a slow drift to protect the panel — all of it in
+  *Settings → Mode StandBy*.
 - **Rows feather out under the top bar** instead of being cut off when you scroll, and the Wi-Fi / Ethernet
   button can be hidden (`show_network_pill`).
 - **Rotating wallpapers of your own** instead, with `"places": false`: put pictures in a theme's `wallpapers/`
@@ -139,6 +167,15 @@ every week.
 | *Home, with this week's place* | *Every app, feathering out under the top bar* |
 | ![The frosted glass Recent Apps deck over the wallpaper, with the live RAM gauge](docs/screenshots/inputs.jpg) | ![The StandBy clock screensaver with large 110sp digits, Hijri date, and prayer countdown](docs/screenshots/clock.jpg) |
 | *Recent Apps, in glass* | *The StandBy clock screensaver* |
+
+### The StandBy screensaver, and the settings behind it
+
+<p align="center">
+  <img src="docs/screenshots/screensaver-analog.png" width="49%" alt="StandBy analog dial with a day-progress ring">
+  <img src="docs/screenshots/screensaver-bento.png" width="49%" alt="StandBy bento cards for clock, weather, Hijri date and prayer">
+  <img src="docs/screenshots/screensaver-editorial.png" width="49%" alt="StandBy editorial style, left-aligned typography">
+  <img src="docs/screenshots/settings-standby.png" width="49%" alt="The Mode StandBy settings tab listing every screensaver choice">
+</p>
 
 Still light: on a Xiaomi Mi TV with 1.8 GB of RAM the launcher uses about 80–100 MB and stays there over hours
 of use, one wallpaper is in memory at a time, the week's places take about 2 MB of storage, and nothing runs

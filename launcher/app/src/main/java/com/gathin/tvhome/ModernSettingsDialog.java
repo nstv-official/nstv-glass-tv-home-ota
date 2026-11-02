@@ -424,6 +424,9 @@ public final class ModernSettingsDialog {
         renderRightPane[0] = () -> {
             rightContent.removeAllViews();
             int tab = activeTab[0];
+            // Hanya tab StandBy yang perlu disegarkan ulang setelah sebuah pemilih screensaver
+            // menyimpan nilai; tab lain melepas kembali kaitannya agar tidak ada rujukan basi.
+            activity.onScreensaverSettingsChanged = null;
 
             if (tab == TAB_PROFILE) {
                 // === TAB 0: PROFILES & MULTI-USER MANAGEMENT ===
@@ -811,6 +814,87 @@ public final class ModernSettingsDialog {
                 // === TAB 4: STANDBY MODE ===
                 addHeader(rightContent, outfit, "StandBy Mode");
 
+                // Pemilih screensaver menyimpan preferensi lalu memanggil ini, sehingga ringkasan
+                // pada tiap baris langsung ikut berubah tanpa perlu menutup dialog pengaturan.
+                activity.onScreensaverSettingsChanged = () -> {
+                    if (renderRightPane[0] != null) renderRightPane[0].run();
+                };
+
+                addSectionLabel(rightContent, outfit, "Tampilan Jam");
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🖼️ Gaya Tampilan Jam", "Saat ini: " + ScreensaverSettings.styleLabel(activity),
+                        activity::showScreensaverStyleDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🌌 Latar Belakang", "Saat ini: " + ScreensaverSettings.backgroundLabel(activity),
+                        activity::showScreensaverBackgroundDialog));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🧊 Kartu Kaca Di Belakang Jam", "Bingkai buram yang lembut, matikan untuk gaya editorial bersih",
+                        ScreensaverSettings.glassCard(activity), isChecked ->
+                                ScreensaverSettings.setGlassCard(activity, isChecked)));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🔤 Format Penulisan Jam", "Saat ini: " + ScreensaverSettings.clockFormatLabel(activity),
+                        activity::showScreensaverFormatDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "✏️ Ukuran Digit Jam", "Saat ini: " + ScreensaverSettings.clockSizeSp(activity) + "sp",
+                        activity::showScreensaverSizeDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🔅 Tingkat Keredupan", "Saat ini: " + ScreensaverSettings.dimLabel(activity),
+                        activity::showScreensaverDimDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🔴 Mode Malam (Wind Down)", "Saat ini: " + ScreensaverSettings.nightModeLabel(activity),
+                        activity::showScreensaverNightDialog));
+
+                addSectionLabel(rightContent, outfit, "Elemen Yang Tampil");
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "📅 Tanggal & Hari", "Tampilkan tanggal Masehi di bawah jam",
+                        ScreensaverSettings.showDate(activity), isChecked ->
+                                ScreensaverSettings.setShowDate(activity, isChecked)));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🌙 Tanggal Hijriah", "Ikut menampilkan tanggal kalender Islam",
+                        ScreensaverSettings.showHijri(activity), isChecked ->
+                                ScreensaverSettings.setShowHijri(activity, isChecked)));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🕌 Jadwal Sholat Berikutnya", "Kapsul waktu sholat yang akan datang sesuai lokasi TV",
+                        ScreensaverSettings.showPrayer(activity), isChecked ->
+                                ScreensaverSettings.setShowPrayer(activity, isChecked)));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "🌡️ Cuaca", "Kondisi cuaca dan suhu dari widget Home",
+                        ScreensaverSettings.showWeather(activity), isChecked ->
+                                ScreensaverSettings.setShowWeather(activity, isChecked)));
+
+                rightContent.addView(buildSwitchRow(activity, density, outfit,
+                        "💬 Petunjuk Keluar", "Tulisan 'Tekan tombol apa saja untuk kembali'",
+                        ScreensaverSettings.showHint(activity), isChecked ->
+                                ScreensaverSettings.setShowHint(activity, isChecked)));
+
+                addSectionLabel(rightContent, outfit, "Jeda & Perawatan Panel");
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "⏱️ Munculkan Screensaver Setelah",
+                        "TV dibiarkan tanpa remote selama " + ScreensaverSettings.minutesLabel(ScreensaverSettings.idleMinutes(activity)).toLowerCase(),
+                        activity::showScreensaverIdleDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🔌 Matikan TV Setelah",
+                        "Layar tidur " + ScreensaverSettings.minutesLabel(ScreensaverSettings.sleepMinutes(activity)).toLowerCase() + " setelah screensaver muncul",
+                        activity::showScreensaverSleepDialog));
+
+                rightContent.addView(buildCardRow(activity, density, outfit,
+                        "🔄 Geser Anti Burn-in",
+                        "Posisi jam digeser tiap " + ScreensaverSettings.driftLabel(activity).toLowerCase(),
+                        activity::showScreensaverDriftDialog));
+
                 rightContent.addView(buildCardRow(activity, density, outfit,
                         "🌙 Uji Screensaver StandBy Sekarang", "Aktifkan jam ambient StandBy layar penuh",
                         activity::showNightstandScreensaver));
@@ -1019,6 +1103,19 @@ public final class ModernSettingsDialog {
         tv.setTextColor(0xFFFFFFFF);
         tv.setTypeface(font, Typeface.BOLD);
         tv.setPadding(0, 0, 0, (int) (14 * root.getContext().getResources().getDisplayMetrics().density));
+        root.addView(tv);
+    }
+
+    /** Judul kelompok kecil di dalam satu tab, gaya yang sama dengan bagian profil. */
+    private static void addSectionLabel(LinearLayout root, Typeface font, String title) {
+        Context ctx = root.getContext();
+        float density = ctx.getResources().getDisplayMetrics().density;
+        TextView tv = new TextView(ctx);
+        tv.setText(title.toUpperCase());
+        tv.setTextSize(11.5f);
+        tv.setTextColor(0xFF8E929E);
+        tv.setTypeface(font, Typeface.BOLD);
+        tv.setPadding(0, (int) (10 * density), 0, (int) (8 * density));
         root.addView(tv);
     }
 

@@ -113,4 +113,25 @@
         <item name="android:textColor">@drawable/top_text</item>
         <item name="android:drawableTint">@drawable/top_text</item>
     </style>
+
+    <!-- Kartu bento screensaver: kaca gelap bertepi tipis, isi rata kiri-bawah. -->
+    <style name="NightstandTile">
+        <item name="android:background">@drawable/bg_nightstand_tile</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+    </style>
+
+    <!-- Label kecil di bagian atas kartu bento. Tebal lewat textStyle, bukan fontVariationSettings:
+         nilai dalam <style> diratakan sebagai string resource, dan tanda kutip satu di dalamnya
+         membuat aapt2 menolak nilai tersebut. -->
+    <style name="NightstandTileLabel">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">#80FFFFFF</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
 </resources>

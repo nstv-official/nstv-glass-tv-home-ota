@@ -55,7 +55,7 @@ final class OnlineWallpapers {
 
     // Built-in curated catalog of dark, moody, atmospheric 4K desktop wallpapers (Unsplash)
     private static final WallpaperItem[] CURATED_CATALOG = new WallpaperItem[]{
-            // Indonesia: Landmark & Destinasi Tersohor Nusantara (16 Koleksi 4K Wikimedia Commons)
+            // Indonesia: Landmark & Destinasi Terkenal Nusantara (16 Koleksi 4K Wikimedia Commons)
             // URL Special:FilePath?width=3840 = file terverifikasi API Wikimedia Commons, diskalakan hingga 4K.
             new WallpaperItem("https://commons.wikimedia.org/wiki/Special:FilePath/Borobudur%2C_panor%C3%A1micas_%281998%29_03.jpg?width=3840",
                     "Candi Borobudur saat Fajar", "Panorama candi Buddha terbesar di dunia, Magelang Jawa Tengah, khazanah warisan dunia UNESCO", "Indonesia_JawaTengah"),

@@ -1,7 +1,7 @@
 {
-  "versionCode": 41,
-  "versionName": "4.0.1",
+  "versionCode": 42,
+  "versionName": "4.0.2",
   "apkUrl": "https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk",
-  "changelog": "🚀 Glass TV v4.0.1: Bahasa Indonesia sebagai default sistem (opsi Melayu dihapus), zona Waktu Sholat Kemenag RI dengan Jakarta sebagai default, hitungan astronomis offline yang akurat per koordinat WIB/WITA/WIT, kanal donasi QRIS untuk mendukung pengembangan, dan relokasi repository ke akun nstv-official.",
-  "releaseDate": "2026-11-01"
+  "changelog": "🌙 Glass TV v4.0.2: Screensaver StandBy kini bisa diatur penuh lewat menu Mode StandBy — 4 gaya jam (Digital, Analog Minimalis dengan cincin kemajuan hari, Editorial Kiri, Bento Widget), 3 latar (wallpaper diburamkan sebagai bawaan baru, cahaya aurora sesuai jam, hitam OLED), sakelar elemen (kartu kaca, tanggal, hijriah, sholat, cuaca, petunjuk), format 12/24 jam, 4 ukuran digit, 4 tingkat keredupan, mode malam merah, serta pengaturan jeda screensaver, jeda tidur TV, dan geser anti burn-in. Kata Melayu yang tersisa (SEMASA) diganti Indonesia dan label destinasi menjadi Terkenal.",
+  "releaseDate": "2026-11-02"
 }

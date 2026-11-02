@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  Kartu kaca screensaver StandBy: kabut putih sangat tipis dengan tepi terang di atas,
+  supaya tetap terbaca sebagai kaca di atas hitam OLED maupun di atas wallpaper.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:endColor="#08FFFFFF"
+                android:startColor="#16FFFFFF"
+                android:type="linear" />
+            <stroke
+                android:width="1.2dp"
+                android:color="#30FFFFFF" />
+            <corners android:radius="28dp" />
+        </shape>
+    </item>
+</layer-list>

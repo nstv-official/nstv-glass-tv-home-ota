@@ -259,11 +259,26 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Pictures of places are on (see PlaceWallpapers); they are dimmed behind the tiles. */
     private boolean placesMode;
     private volatile boolean placesRefreshRunning;
-    private static final long SCREENSAVER_TIMEOUT_MS = 10L * 60 * 1000L; // 10 minutes idle -> screensaver
-    private static final long TV_SLEEP_TIMEOUT_MS = SCREENSAVER_TIMEOUT_MS + (2L * 60 * 60 * 1000L); // 2 hours later -> TV off
+    /** Batas idle sebelum screensaver menyala, dibaca dari pengaturan tiap kali diperiksa. */
+    private long screensaverTimeoutMs() {
+        return ScreensaverSettings.idleMinutes(this) * 60_000L;
+    }
+
+    /** Batas total sejak interaksi terakhir sebelum TV benar-benar tidur: screensaver + jeda tidurnya. */
+    private long tvSleepTimeoutMs() {
+        return screensaverTimeoutMs() + ScreensaverSettings.sleepMinutes(this) * 60_000L;
+    }
+
+    /** Kapan posisi screensaver terakhir digeser, untuk drift anti burn-in. */
+    private long lastDriftAt = 0L;
+    private final java.util.Random driftRandom = new java.util.Random();
     private long lastUserInteraction = android.os.SystemClock.elapsedRealtime();
     private boolean screensaverActive = false;
     private View screensaverView;
+    /** Gaya yang sedang dibangun pada {@code screensaverView}; beda berarti tata letak disusun ulang. */
+    private String screensaverStyleBuilt;
+    /** Dipanggil {@link ModernSettingsDialog} supaya baris pengaturan screensaver menampilkan nilai terbaru. */
+    Runnable onScreensaverSettingsChanged;
     private boolean wallpaperFullscreen = false;
     private View mainContent;
     private static final long DOUBLE_BACK_DELAY_MS = 350L;
@@ -1000,6 +1015,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         android.graphics.Bitmap old = wallBitmap;
         wallBitmap = bmp;
+        // Layar screensaver meminjam gambar ini saat latar "wallpaper blur" dipilih; dream berjalan
+        // di proses yang sama, jadi cukup satu rujukan statis.
+        Nightstand.wallpaper = bmp;
         if (fade && old != null && !reducedMotion) {
             android.graphics.drawable.TransitionDrawable t = new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[]{
                     new android.graphics.drawable.BitmapDrawable(getResources(), old),
@@ -3789,7 +3807,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         List<WallpaperOption> options = new ArrayList<>();
 
         // Category 1: Indonesia
-        String tMal = AppLanguage.LANG_EN.equals(curLang) ? "🇮🇩 Iconic Landmarks of Indonesia" : "🇮🇩 Landmark & Destinasi Tersohor Indonesia";
+        String tMal = AppLanguage.LANG_EN.equals(curLang) ? "🇮🇩 Iconic Landmarks of Indonesia" : "🇮🇩 Landmark & Destinasi Terkenal Indonesia";
         String sMal = AppLanguage.LANG_EN.equals(curLang) ? "16 Iconic 4K Collection (Wikimedia Commons)" : "16 Koleksi 4K Ikonik (Wikimedia Commons)";
         options.add(new WallpaperOption("Indonesia", tMal, sMal));
 
@@ -4421,7 +4439,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         getSharedPreferences("wallpaper_prefs", MODE_PRIVATE).edit().putString("active_category", category).apply();
         String displayLabel;
         if ("Indonesia".equalsIgnoreCase(category)) {
-            displayLabel = "Landmark & Destinasi Tersohor Indonesia";
+            displayLabel = "Landmark & Destinasi Terkenal Indonesia";
         } else if ("Minimalist".equalsIgnoreCase(category)) {
             displayLabel = "Minimalis Gelap (OLED)";
         } else {
@@ -5295,9 +5313,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void checkInactivity() {
         if (!hasWindowFocus() || isFinishing() || isDestroyed()) return;
         long idleMs = android.os.SystemClock.elapsedRealtime() - lastUserInteraction;
-        if (idleMs >= TV_SLEEP_TIMEOUT_MS) {
+        if (idleMs >= tvSleepTimeoutMs()) {
             turnOffTv();
-        } else if (idleMs >= SCREENSAVER_TIMEOUT_MS && !screensaverActive) {
+        } else if (idleMs >= screensaverTimeoutMs() && !screensaverActive) {
             showNightstandScreensaver();
         } else if (screensaverActive && screensaverView != null) {
             updateNightstandScreensaver();
@@ -5310,73 +5328,52 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             setWallpaperFullscreen(false);
         }
         screensaverActive = true;
+        // Gaya memilih tata letak yang berbeda, jadi salinan lama dibuang bila gaya berganti.
+        String style = ScreensaverSettings.style(this);
+        if (screensaverView != null && !style.equals(screensaverStyleBuilt)) dropScreensaverView();
         if (screensaverView == null) {
-            screensaverView = getLayoutInflater().inflate(R.layout.view_nightstand, root, false);
+            screensaverView = Nightstand.inflate(this, getLayoutInflater(), root);
             screensaverView.setOnClickListener(v -> dismissScreensaver());
             root.addView(screensaverView, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            screensaverStyleBuilt = style;
         }
 
+        lastDriftAt = 0L;
         updateNightstandScreensaver();
 
         screensaverView.setVisibility(View.VISIBLE);
         screensaverView.setAlpha(0f);
         screensaverView.animate().alpha(1f).setDuration(500).start();
-        android.util.Log.i("TvHome", "Nightstand screensaver activated");
+        android.util.Log.i("TvHome", "Nightstand screensaver activated (" + style + ")");
+    }
+
+    /** Susun ulang layar screensaver yang sedang tampil, dipakai setelah pengaturan diubah. */
+    private void rebuildScreensaverIfActive() {
+        if (!screensaverActive) return;
+        dropScreensaverView();
+        showNightstandScreensaver();
+    }
+
+    private void dropScreensaverView() {
+        if (screensaverView != null) {
+            root.removeView(screensaverView);
+            screensaverView = null;
+            screensaverStyleBuilt = null;
+        }
     }
 
     private void updateNightstandScreensaver() {
         if (screensaverView == null) return;
-        TextView hijri = screensaverView.findViewById(R.id.nightstandHijri);
-        if (hijri != null) hijri.setText("🌙 " + PrayerTimes.getHijriDate());
+        Nightstand.bind(screensaverView, this);
 
-        TextView prayer = screensaverView.findViewById(R.id.nightstandPrayer);
-        if (prayer != null) prayer.setText("🕌 " + PrayerTimes.getNextPrayerSummary(this));
-
-        // Center locked strictly with no movement
-        View content = screensaverView.findViewById(R.id.nightstandContent);
-        if (content != null) {
-            content.animate().cancel();
-            content.setTranslationX(0f);
-            content.setTranslationY(0f);
-        }
-
-        // iPhone StandBy Wind Down Mode: 10:00 PM (22:00) to 6:00 AM (06:00) -> Red Monochrome
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
-        boolean isNightMode = (hour >= 22 || hour < 6);
-
-        TextView clock = screensaverView.findViewById(R.id.nightstandClock);
-        TextView ampm = screensaverView.findViewById(R.id.nightstandAmPm);
-        TextView date = screensaverView.findViewById(R.id.nightstandDate);
-        TextView hint = screensaverView.findViewById(R.id.nightstandHint);
-
-        if (isNightMode) {
-            int red = 0xFFFF453A;
-            if (clock != null) clock.setTextColor(red);
-            if (ampm != null) ampm.setTextColor(0xCCFF453A);
-            if (date != null) date.setTextColor(0xE6FF453A);
-            if (hijri != null) hijri.setTextColor(0xE6FF453A);
-            if (prayer != null) {
-                prayer.setTextColor(red);
-                android.graphics.drawable.GradientDrawable redPill = new android.graphics.drawable.GradientDrawable();
-                redPill.setShape(android.graphics.drawable.GradientDrawable.RECTANGLE);
-                redPill.setColor(0x26FF453A);
-                redPill.setStroke((int) (1 * density), 0x59FF453A);
-                redPill.setCornerRadius(21 * density);
-                prayer.setBackground(redPill);
-            }
-            if (hint != null) hint.setTextColor(0x55FF453A);
-        } else {
-            if (clock != null) clock.setTextColor(0xFFFFFFFF);
-            if (ampm != null) ampm.setTextColor(0xB3FFFFFF);
-            if (date != null) date.setTextColor(0xE6FFFFFF);
-            if (hijri != null) hijri.setTextColor(0xD9E6E0D2);
-            if (prayer != null) {
-                prayer.setTextColor(0xFFFFFFFF);
-                prayer.setBackgroundResource(R.drawable.pill_bg);
-            }
-            if (hint != null) hint.setTextColor(0x4DFFFFFF);
+        int drift = ScreensaverSettings.driftSeconds(this);
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (drift <= 0) {
+            Nightstand.drift(screensaverView, driftRandom);
+        } else if (now - lastDriftAt >= drift * 1000L) {
+            lastDriftAt = now;
+            Nightstand.drift(screensaverView, driftRandom);
         }
     }
 
@@ -5392,8 +5389,143 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         android.util.Log.i("TvHome", "Nightstand screensaver dismissed");
     }
 
+    // ==================== PENGATURAN SCREENSAVER ====================
+
+    /** Semua pemilih screensaver lewat jalur yang sama: simpan, segarkan tampilan, beri tahu. */
+    private interface ScreensaverApply { void apply(String key); }
+
+    private void pickScreensaver(String title, String subtitle, List<OptionPicker.Option> options,
+                                 String current, ScreensaverApply apply) {
+        OptionPicker.show(this, title, subtitle, options, current, (opt, index) -> {
+            apply.apply(opt.key);
+            SoundEffects.playSelect();
+            // Judul baris selalu "emoji Label": buang emoji-nya untuk pesan yang ringkas.
+            String label = opt.title;
+            int space = label.indexOf(' ');
+            if (space > 0) label = label.substring(space + 1);
+            Toast.makeText(this, "✅ " + label, Toast.LENGTH_SHORT).show();
+            if (screensaverActive) updateNightstandScreensaver();
+            if (onScreensaverSettingsChanged != null) onScreensaverSettingsChanged.run();
+        });
+    }
+
+    void showScreensaverStyleDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option(ScreensaverSettings.STYLE_DIGITAL,
+                "🕒 Digital Terpusat", "Jam besar di tengah, gaya StandBy iPhone"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.STYLE_ANALOG,
+                "🕘 Analog Minimalis", "Dial jarum tipis dengan cincin kemajuan hari"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.STYLE_EDIT,
+                "📰 Editorial Kiri", "Tipografi ringan rata kiri, tanpa kartu kaca"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.STYLE_BENTO,
+                "🧱 Bento Widget", "Kartu-kartu kaca: cuaca, hijriah, sholat"));
+        pickScreensaver("🖼️ Gaya Tampilan Screensaver", "Pilih bentuk jam saat TV menganggur",
+                opts, ScreensaverSettings.style(this), key -> {
+                    ScreensaverSettings.setStyle(this, key);
+                    rebuildScreensaverIfActive();
+                });
+    }
+
+    void showScreensaverBackgroundDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option(ScreensaverSettings.BG_OLED,
+                "⚫ Hitam OLED", "Paling hemat energi, tulisan paling kontras"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.BG_WALLPAPER,
+                "🌄 Wallpaper Diburamkan", "Gambar hari ini dilembutkan di belakang jam"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.BG_AURORA,
+                "✨ Cahaya Aurora", "Warna lembut yang berubah mengikuti jam"));
+        pickScreensaver("🌌 Latar Screensaver", "Isi ruang di belakang jam", opts,
+                ScreensaverSettings.background(this), key -> ScreensaverSettings.setBackground(this, key));
+    }
+
+    void showScreensaverFormatDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option(ScreensaverSettings.FMT_AUTO,
+                "🔄 Ikuti Pengaturan TV", "Bawaan Android: biasanya 12 jam"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.FMT_12,
+                " 12 Jam (AM/PM)", "Selalu pakai penanda AM/PM"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.FMT_24,
+                "🔢 24 Jam", "Misalnya 20:14, tanpa penanda"));
+        pickScreensaver("🔤 Format Jam", "Cara jam ditulis di screensaver", opts,
+                ScreensaverSettings.clockFormat(this), key -> ScreensaverSettings.setClockFormat(this, key));
+    }
+
+    void showScreensaverSizeDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option("80", "📏 Sedang (80sp)", "Cocok untuk TV kecil 32 inci"));
+        opts.add(new OptionPicker.Option("110", "📏 Besar (110sp)", "Ukuran bawaan, paling seimbang"));
+        opts.add(new OptionPicker.Option("140", "📏 Sangat Besar (140sp)", "Terbaca dari ruang makan"));
+        opts.add(new OptionPicker.Option("170", "📏 Raksasa (170sp)", "Menjadi satu-satunya fokus layar"));
+        pickScreensaver("✏️ Ukuran Digit Jam", "Besar angka jam pada screensaver", opts,
+                String.valueOf(ScreensaverSettings.clockSizeSp(this)),
+                key -> ScreensaverSettings.setClockSizeSp(this, Integer.parseInt(key)));
+    }
+
+    void showScreensaverDimDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option("0", "💡 Terang", "Untuk ruangan yang menyala"));
+        opts.add(new OptionPicker.Option("1", "🌙 Sedang (Bawaan)", "Kadar aman untuk ruang gelap"));
+        opts.add(new OptionPicker.Option("2", "🌑 Redup", "Hampir tidak memancarkan cahaya"));
+        opts.add(new OptionPicker.Option("3", "🕶️ Sangat Redup", "Untuk menemani tidur"));
+        pickScreensaver("🔅 Tingkat Keredupan", "Seberapa gelap layar saat screensaver", opts,
+                String.valueOf(ScreensaverSettings.dimLevel(this)),
+                key -> ScreensaverSettings.setDimLevel(this, Integer.parseInt(key)));
+    }
+
+    void showScreensaverNightDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option(ScreensaverSettings.NIGHT_AUTO,
+                "🌙 Otomatis (22.00 - 06.00)", "Monokrom merah hanya saat larut malam"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.NIGHT_ON,
+                "🔴 Selalu Merah", "Redaman mata sepanjang malam"));
+        opts.add(new OptionPicker.Option(ScreensaverSettings.NIGHT_OFF,
+                "⚪ Tidak Pernah", "Tetap putih bersih walau larut malam"));
+        pickScreensaver("🔴 Mode Malam (Wind Down)", "Layar berubah merah lembut saat malam",
+                opts, ScreensaverSettings.nightMode(this), key -> ScreensaverSettings.setNightMode(this, key));
+    }
+
+    void showScreensaverIdleDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        for (int m : ScreensaverSettings.IDLE_MINUTES) {
+            String label = (m == 10 ? "⭐ " : "⏱️ ") + ScreensaverSettings.minutesLabel(m);
+            String note = m == 10 ? "Bawaan Glass TV" : (m <= 5 ? "Cepat, cocok untuk demo" : "Santai, TV jarang menganggur");
+            opts.add(new OptionPicker.Option(String.valueOf(m), label, note));
+        }
+        pickScreensaver("⏱️ Jeda Sebelum Screensaver", "Berapa lama TV dibiarkan tanpa remote",
+                opts, String.valueOf(ScreensaverSettings.idleMinutes(this)), key -> {
+                    ScreensaverSettings.setIdleMinutes(this, Integer.parseInt(key));
+                    ensureSystemScreensaverAndSleepSettings();
+                });
+    }
+
+    void showScreensaverSleepDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        for (int m : ScreensaverSettings.SLEEP_MINUTES) {
+            String note = m == 120 ? "Bawaan Glass TV" : (m <= 60 ? "Hemat listrik lebih cepat" : "Screensaver dibiarkan lama");
+            opts.add(new OptionPicker.Option(String.valueOf(m),
+                    "😴 " + ScreensaverSettings.minutesLabel(m), note));
+        }
+        pickScreensaver("🔌 Matikan TV Setelah", "Lama screensaver menyala sebelum TV benar-benar tidur",
+                opts, String.valueOf(ScreensaverSettings.sleepMinutes(this)), key -> {
+                    ScreensaverSettings.setSleepMinutes(this, Integer.parseInt(key));
+                    ensureSystemScreensaverAndSleepSettings();
+                });
+    }
+
+    void showScreensaverDriftDialog() {
+        List<OptionPicker.Option> opts = new ArrayList<>();
+        opts.add(new OptionPicker.Option("0", "📌 Diam di Tengah", "Posisi tetap, jangan pilih ini untuk OLED"));
+        opts.add(new OptionPicker.Option("60", "🔄 Setiap 1 Menit", "Geser halus anti burn-in (disarankan)"));
+        opts.add(new OptionPicker.Option("300", "🔄 Setiap 5 Menit", "Perpindahan lebih jarang"));
+        opts.add(new OptionPicker.Option("600", "🔄 Setiap 10 Menit", "Hampir tidak terlihat bergerak"));
+        pickScreensaver("🔄 Geser Anti Burn-in", "Layar digeser sedikit berkala agar panel tidak terkikis",
+                opts, String.valueOf(ScreensaverSettings.driftSeconds(this)),
+                key -> ScreensaverSettings.setDriftSeconds(this, Integer.parseInt(key)));
+    }
+
+
     private void turnOffTv() {
-        android.util.Log.i("TvHome", "TV idle: 10m screensaver + 2h timeout reached, putting TV to sleep");
+        android.util.Log.i("TvHome", "TV idle: batas screensaver + jeda tidur tercapai, mematikan layar");
         boolean ok = HomeKeyService.sleepScreen();
         if (!ok) {
             try {
@@ -5409,9 +5541,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             try {
                 android.content.ContentResolver cr = getContentResolver();
                 // 10 minutes idle -> screensaver (600,000 ms)
-                android.provider.Settings.System.putInt(cr, "screen_off_timeout", 600000);
-                // 2 hours after screensaver -> TV off (10m + 2h = 7,800,000 ms)
-                android.provider.Settings.Secure.putInt(cr, "sleep_timeout", 7800000);
+                android.provider.Settings.System.putInt(cr, "screen_off_timeout", (int) screensaverTimeoutMs());
+                // Setelah screensaver berjalan selama yang dipilih, TV benar-benar tidur.
+                android.provider.Settings.Secure.putInt(cr, "sleep_timeout", (int) tvSleepTimeoutMs());
                 android.provider.Settings.Secure.putInt(cr, "screensaver_enabled", 1);
                 android.provider.Settings.Secure.putString(cr, "screensaver_components", "com.gathin.tvhome/.ClockDream");
 

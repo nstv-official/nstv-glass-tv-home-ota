@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  Gaya bento untuk screensaver StandBy: kartu-kartu kaca berisi jam, cuaca, hijriah, dan sholat
+  berikutnya. Id view sengaja sama dengan view_nightstand.xml supaya Nightstand.java mengikat
+  kedua tata letak dengan kode yang sama.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nightstandRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/nightstandBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="fitXY"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/nightstandAurora"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <View
+        android:id="@+id/nightstandScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/nightstandContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="70dp"
+        android:paddingEnd="70dp">
+
+        <!-- Kartu kaca tidak dipakai pada bento; tiap tile punya kacanya sendiri. -->
+        <LinearLayout
+            android:id="@+id/nightstandCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <!-- Baris atas: jam besar (2 kolom) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:id="@+id/nightstandTileClock"
+                    style="@style/NightstandTile"
+                    android:layout_width="0dp"
+                    android:layout_height="170dp"
+                    android:layout_weight="2"
+                    android:gravity="start|bottom|center_vertical"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/nightstandClockRow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextClock
+                            android:id="@+id/nightstandClock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter"
+                            android:fontVariationSettings="'wght' 400"
+                            android:format12Hour="h:mm"
+                            android:format24Hour="HH:mm"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="-0.03"
+                            android:textColor="#FFFFFFFF"
+                            android:textSize="76sp" />
+
+                        <TextClock
+                            android:id="@+id/nightstandAmPm"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="@font/inter"
+                            android:fontVariationSettings="'wght' 600"
+                            android:format12Hour="a"
+                            android:format24Hour=""
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.08"
+                            android:textAllCaps="true"
+                            android:textColor="#B3FFFFFF"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <TextClock
+                        android:id="@+id/nightstandDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:fontFamily="@font/inter"
+                        android:fontVariationSettings="'wght' 500"
+                        android:format12Hour="EEEE, d MMMM yyyy"
+                        android:format24Hour="EEEE, d MMMM yyyy"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.04"
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="15sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Baris bawah: tiga tile kecil -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <LinearLayout
+                    android:id="@+id/nightstandTileWeather"
+                    style="@style/NightstandTile"
+                    android:layout_width="0dp"
+                    android:layout_height="130dp"
+                    android:layout_weight="1"
+                    android:gravity="start|bottom"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/NightstandTileLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CUACA" />
+
+                    <TextView
+                        android:id="@+id/nightstandWeather"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/inter"
+                        android:fontVariationSettings="'wght' 600"
+                        android:includeFontPadding="false"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="#F2FFFFFF"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nightstandTileHijri"
+                    style="@style/NightstandTile"
+                    android:layout_width="0dp"
+                    android:layout_height="130dp"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:gravity="start|bottom"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/NightstandTileLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HIJRIAH" />
+
+                    <TextView
+                        android:id="@+id/nightstandHijri"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/inter"
+                        android:fontVariationSettings="'wght' 600"
+                        android:includeFontPadding="false"
+                        android:textColor="#F2FFFFFF"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/nightstandTilePrayer"
+                    style="@style/NightstandTile"
+                    android:layout_width="0dp"
+                    android:layout_height="130dp"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:gravity="start|bottom"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/NightstandTileLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SHOLAT BERIKUTNYA" />
+
+                    <TextView
+                        android:id="@+id/nightstandPrayer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@null"
+                        android:fontFamily="@font/inter"
+                        android:fontVariationSettings="'wght' 600"
+                        android:includeFontPadding="false"
+                        android:padding="0dp"
+                        android:textColor="#F2FFFFFF"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.gathin.tvhome.AnalogDialView
+                android:id="@+id/nightstandDial"
+                android:layout_width="270dp"
+                android:layout_height="270dp"
+                android:layout_marginTop="10dp"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/nightstandRule"
+                android:layout_width="140dp"
+                android:layout_height="1.5dp"
+                android:background="#4DFFFFFF"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/nightstandHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:fontFamily="@font/inter"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.06"
+            android:text="Tekan tombol apa saja untuk kembali"
+            android:textColor="#4DFFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+</FrameLayout>
