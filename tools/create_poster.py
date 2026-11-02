@@ -121,7 +121,7 @@ def main():
     
     # --- HEADER SECTION ---
     # Top Pill Badge
-    badge_text = "GLASS OS 4.0.1 • LIVING ROOM OPERATING SYSTEM • ANDROID TV 9-14"
+    badge_text = "GLASS OS 4.0.3 • LIVING ROOM OPERATING SYSTEM • ANDROID TV 9-14"
     bbox_b = font_badge.getbbox(badge_text)
     bw = bbox_b[2] - bbox_b[0] + 32
     bh = 28
@@ -134,11 +134,11 @@ def main():
     
     # Title & Subtitle
     draw.text((70, 76), "Glass TV Home", font=font_title, fill=(255, 255, 255, 255))
-    draw.text((70, 132), "Mindful living room OS featuring Apple Weather Bento, 16:9 Adzan Floating Modal & StandBy Clock", font=font_subtitle, fill=(148, 163, 184, 255))
+    draw.text((70, 132), "Mindful living room OS featuring Apple Weather Bento, 16:9 Adzan Floating Modal & StandBy Clock, 4 Styles", font=font_subtitle, fill=(148, 163, 184, 255))
     
     # Right Header Metric Chips
     chips = [
-        ("1.6 MB", "Ultralight Footprint", (52, 211, 153)),
+        ("1.5 MB", "Ultralight Footprint", (52, 211, 153)),
         ("100% Leanback", "D-Pad Remote Ergonomics", (56, 189, 248)),
         ("Kemenag RI", "Zona WIB / WITA / WIT", (251, 191, 36))
     ]
@@ -210,7 +210,7 @@ def main():
         accent_color=(56, 189, 248)
     )
     
-    # 4. Bottom-Left Card: StandBy OLED Clock Screensaver
+    # 4. Bottom-Left Card: StandBy Clock Screensaver (gaya dapat dipilih)
     draw_bezel_window(
         base_img=img,
         screen_img=img_screensaver,
@@ -222,7 +222,7 @@ def main():
         shadow_offset=14,
         shadow_blur=20,
         shadow_alpha=160,
-        badge_text="StandBy OLED Clock",
+        badge_text="StandBy Clock • 4 Styles",
         badge_pos="bottom_left",
         badge_font=font_pill,
         accent_color=(147, 197, 253)
@@ -278,7 +278,7 @@ def main():
     img.alpha_composite(footer_bar, (70, 915))
     
     # Bottom subtle watermark
-    draw.text((70, 1030), "Glass TV OS • Version 4.0.1 Release Architecture • All UI captures taken directly from live Android TV build", font=font_pill, fill=(100, 116, 139, 220))
+    draw.text((70, 1030), "Glass TV OS • Version 4.0.3 Release Architecture • All UI captures taken directly from live Android TV build", font=font_pill, fill=(100, 116, 139, 220))
     draw.text((WIDTH - 380, 1030), "Designed for Xiaomi Mi Box & Android TV 9+", font=font_pill, fill=(100, 116, 139, 220))
     
     # Save as high-quality JPEG
