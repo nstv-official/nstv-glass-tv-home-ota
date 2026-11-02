@@ -438,7 +438,7 @@ public final class ModernSettingsDialog {
 
                 // Section 1: Active Profile Avatars
                 TextView tvAvatars = new TextView(activity);
-                tvAvatars.setText("AVATAR PROFIL SEMASA (" + activeP.name.toUpperCase() + ")");
+                tvAvatars.setText("AVATAR PROFIL SAAT INI (" + activeP.name.toUpperCase() + ")");
                 tvAvatars.setTextSize(11.5f);
                 tvAvatars.setTextColor(0xFF8E929E);
                 tvAvatars.setTypeface(outfit, Typeface.BOLD);

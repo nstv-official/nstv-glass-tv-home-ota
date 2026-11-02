@@ -121,7 +121,7 @@ def main():
     
     # --- HEADER SECTION ---
     # Top Pill Badge
-    badge_text = "GLASS OS 3.0 • LIVING ROOM OPERATING SYSTEM • ANDROID TV 9-12"
+    badge_text = "GLASS OS 4.0.1 • LIVING ROOM OPERATING SYSTEM • ANDROID TV 9-14"
     bbox_b = font_badge.getbbox(badge_text)
     bw = bbox_b[2] - bbox_b[0] + 32
     bh = 28
@@ -134,13 +134,13 @@ def main():
     
     # Title & Subtitle
     draw.text((70, 76), "Glass TV Home", font=font_title, fill=(255, 255, 255, 255))
-    draw.text((70, 132), "Mindful living room OS featuring Apple Weather Bento, 16:9 Azan Floating Modal & StandBy Clock", font=font_subtitle, fill=(148, 163, 184, 255))
+    draw.text((70, 132), "Mindful living room OS featuring Apple Weather Bento, 16:9 Adzan Floating Modal & StandBy Clock", font=font_subtitle, fill=(148, 163, 184, 255))
     
     # Right Header Metric Chips
     chips = [
-        ("644 KB", "Ultralight Footprint", (52, 211, 153)),
+        ("1.6 MB", "Ultralight Footprint", (52, 211, 153)),
         ("100% Leanback", "D-Pad Remote Ergonomics", (56, 189, 248)),
-        ("Prayer Times & Kemenag RI", "Sub-Second Sync", (251, 191, 36))
+        ("Kemenag RI", "Zona WIB / WITA / WIT", (251, 191, 36))
     ]
     chip_x = 1260
     for val, lbl, col in chips:
@@ -186,7 +186,7 @@ def main():
         shadow_offset=18,
         shadow_blur=28,
         shadow_alpha=180,
-        badge_text="16:9 Azan & Sholat Floating Settings",
+        badge_text="16:9 Adzan & Sholat Floating Settings",
         badge_pos="bottom_right",
         badge_font=font_pill,
         accent_color=(74, 222, 128)
@@ -204,7 +204,7 @@ def main():
         shadow_offset=26,
         shadow_blur=42,
         shadow_alpha=220,
-        badge_text="Primary TV Home • Candi Borobudur at Dawn • Live Dock",
+        badge_text="Primary TV Home • Danau Kelimutu, NTT • Live Dock",
         badge_pos="bottom_right",
         badge_font=font_pill,
         accent_color=(56, 189, 248)
@@ -252,7 +252,7 @@ def main():
     fdraw.rounded_rectangle([(0, 0), (WIDTH - 140, 94)], radius=16, fill=(15, 23, 42, 180), outline=(255, 255, 255, 24), width=1)
     
     features = [
-        ("WEATHER ENGINE 3.0", "Open-Meteo live sync, KLHK ISPU Air Quality, interactive rain radar, hourly pills, dynamic animated skies."),
+        ("WEATHER ENGINE 4.0", "Open-Meteo live sync, KLHK ISPU air quality, interactive rain radar, hourly pills, dynamic animated skies."),
         ("ISLAMIC LIVING ROOM", "Kemenag RI Indonesia auto prayer zone (WIB/WITA/WIT), 6-phase timetable, 16:9 floating settings dialog with individual prayer toggle."),
         ("4K INDONESIA & PHONE QR", "16 iconic Indonesian landmarks from Wikimedia Commons, UHD collections, phone QR photo upload server without external cloud.")
     ]
@@ -260,24 +260,25 @@ def main():
     fx = 32
     for f_title, f_desc in features:
         fdraw.text((fx, 18), f_title, font=font_footer_title, fill=(56, 189, 248, 255))
-        # Word wrap description
-        words = f_desc.split(' ')
+        # Word wrap deskripsi berdasarkan lebar piksel sebenarnya, max 2 baris
+        max_w = 520
         line1 = ""
         line2 = ""
-        for w in words:
-            if len(line1 + w) < 42:
-                line1 += w + " "
+        for w in f_desc.split(' '):
+            trial = (line1 + " " + w).strip()
+            if fdraw.textlength(trial, font=font_footer_desc) <= max_w:
+                line1 = trial
             else:
-                line2 += w + " "
-        fdraw.text((fx, 40), line1.strip(), font=font_footer_desc, fill=(226, 232, 240, 230))
+                line2 = (line2 + " " + w).strip()
+        fdraw.text((fx, 40), line1, font=font_footer_desc, fill=(226, 232, 240, 230))
         if line2:
-            fdraw.text((fx, 58), line2.strip(), font=font_footer_desc, fill=(148, 163, 184, 210))
+            fdraw.text((fx, 58), line2, font=font_footer_desc, fill=(148, 163, 184, 210))
         fx += 580
         
     img.alpha_composite(footer_bar, (70, 915))
     
     # Bottom subtle watermark
-    draw.text((70, 1030), "Glass TV OS • Version 3.0.0 Release Architecture • All UI captures taken directly from live Android TV build", font=font_pill, fill=(100, 116, 139, 220))
+    draw.text((70, 1030), "Glass TV OS • Version 4.0.1 Release Architecture • All UI captures taken directly from live Android TV build", font=font_pill, fill=(100, 116, 139, 220))
     draw.text((WIDTH - 380, 1030), "Designed for Xiaomi Mi Box & Android TV 9+", font=font_pill, fill=(100, 116, 139, 220))
     
     # Save as high-quality JPEG

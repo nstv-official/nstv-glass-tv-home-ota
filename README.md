@@ -1,4 +1,4 @@
-﻿# Glass TV
+# Glass TV
 
 **Make your Android TV or Google TV fast and ad-free again: strip out the bloat and ads, free up memory,
 and come home to just your apps, with a new place to visit behind them every week.**
@@ -46,7 +46,7 @@ every week.
 <p align="center">
   <img src="docs/screenshots/home-live.png" width="19%" alt="Live Home Screen">
   <img src="docs/screenshots/weather-live.png" width="19%" alt="Apple Weather Bento Dashboard">
-  <img src="docs/screenshots/azan-popup-live.png" width="19%" alt="16:9 Azan Floating Settings">
+  <img src="docs/screenshots/azan-popup-live.png" width="19%" alt="16:9 Adzan Floating Settings">
   <img src="docs/screenshots/screensaver-live.png" width="19%" alt="StandBy Screensaver">
   <img src="docs/screenshots/wallpaper-dialog-live.png" width="19%" alt="4K Wallpapers & Phone QR Upload">
 </p>
@@ -81,7 +81,7 @@ every week.
   - **2 Hours Later**: Automatically turns off the TV display into deep sleep standby via Android's Accessibility Service (`GLOBAL_ACTION_LOCK_SCREEN`).
 - **Frosted Glass Settings Dropdown & 4K Wallpaper Categories.**
   - **Floating Glass Dropdown**: Clicking the top Settings icon (`⚙️`) opens a native Apple tvOS-style glass menu under the button.
-  - **Dynamic 4K Wallpaper Switcher**: Switch themes on the fly between *Natural*, *🇮🇩 Indonesia (Ikonik Nusantara)*, *Skyscraper* (Jakarta, Manhattan, Chicago, Dubai, HK), *Deep Space*, *Ocean & Coastal*, *Minimalist Dark*, or trigger *Next Wallpaper*.
+  - **Dynamic 4K Wallpaper Switcher**: Switch themes on the fly between *Natural*, *🇮🇩 Landmark & Destinasi Terkenal Indonesia*, *Pencakar Langit & Kota* (Jakarta, Manhattan, Chicago, Dubai, HK), *Luar Angkasa & Kosmos*, *Lautan & Pesisir Pantai*, or trigger *Next Wallpaper*.
   - **🇮🇩 Indonesian Landmark Collection**: 16 iconic Indonesian landmarks and destinations (Borobudur, Raja Ampat, Komodo, Kawah Ijen, and more) curated from Wikimedia Commons, rotated automatically or picked individually.
   - **Built-in Haze & Prayer Zone Selectors**: Select from dozens of KLHK (ISPU) air quality stations and official Kemenag RI prayer zones (WIB/WITA/WIT) without needing a computer or AI.
   - **All Settings Shortcut**: Access standard Android TV settings in one click (or by long-pressing Settings).
@@ -137,8 +137,8 @@ every week.
 |---|---|
 | ![Home with an iconic Indonesian landmark, story caption and glass dock](docs/screenshots/home.jpg) | ![The app grid scrolled down over the wallpaper, rows feathering out under the top bar](docs/screenshots/grid.jpg) |
 | *Home, with this week's place* | *Every app, feathering out under the top bar* |
-| ![The glass menu and quick controls over the wallpaper](docs/screenshots/inputs.jpg) | ![The StandBy clock screensaver with large 110sp digits, Hijri date, and prayer countdown](docs/screenshots/clock.jpg) |
-| *Inputs, in glass* | *The StandBy clock screensaver* |
+| ![The frosted glass Recent Apps deck over the wallpaper, with the live RAM gauge](docs/screenshots/inputs.jpg) | ![The StandBy clock screensaver with large 110sp digits, Hijri date, and prayer countdown](docs/screenshots/clock.jpg) |
+| *Recent Apps, in glass* | *The StandBy clock screensaver* |
 
 Still light: on a Xiaomi Mi TV with 1.8 GB of RAM the launcher uses about 80–100 MB and stays there over hours
 of use, one wallpaper is in memory at a time, the week's places take about 2 MB of storage, and nothing runs
