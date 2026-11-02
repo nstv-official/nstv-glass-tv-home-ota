@@ -1,4 +1,4 @@
-﻿# Panduan Pengguna Glass TV Home (Untuk Beginner) 📺✨
+# Panduan Pengguna Glass TV Home (Untuk Beginner) 📺✨
 
 Selamat datang di **Glass TV Home**! Panduan ini khusus untuk pengguna baru (*beginner-friendly*) agar Anda bisa memasang, mengoptimalkan TV supaya ngebut tanpa iklan, menggunakan remote TV, dan menikmati semua fitur menarik dengan mudah tanpa pusing.
 
@@ -19,9 +19,9 @@ Glass TV Home adalah pengganti layar utama (*launcher*) untuk Android TV dan Goo
 
 Silakan unduh file pemasangan resmi sesuai perangkat Anda:
 * 📱 **Untuk Ponsel / Tablet Android (Aplikasi Pembantu Pemasangan — Direkomendasikan)**:  
-  [**`glass-tv-installer.apk`** (5.2 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) — **Pilihan Utama!** Pasang langsung ke TV dan kunci tombol Home lewat Wi-Fi tanpa perlu komputer (PC) atau kabel.
+  [**`glass-tv-installer.apk`** (6.6 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) — **Pilihan Utama!** Pasang langsung ke TV dan kunci tombol Home lewat Wi-Fi tanpa perlu komputer (PC) atau kabel.
 * 📺 **Untuk Android TV / Google TV (Launcher Utama v4.0)**:  
-  [**`glass-tv-home.apk`** (800 KB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) — Versi terbaru `v4.0.1` (Tipografi universal Inter, ikon avatar profil aktif di bar atas, mesin adaptasi mandiri 1080p/4K, server unggah wallpaper fail-safe).
+  [**`glass-tv-home.apk`** (1.5 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) — Versi terbaru `v4.0.3` (Tipografi universal Inter, ikon avatar profil aktif di bar atas, mesin adaptasi mandiri 1080p/4K, server unggah wallpaper fail-safe).
 
 > [!CAUTION]
 > ### ⚠️ JANGAN PASANG APK SECARA SIDELOAD BIASA TANPA INSTALLER / AI!
@@ -46,7 +46,7 @@ Ikuti panduan sesuai perangkat yang Anda miliki dengan urutan prioritas berikut:
 Jika Anda punya ponsel atau tablet Android, ini adalah metode **paling mudah, cepat, dan 100% otomatis** tanpa memerlukan komputer atau kabel USB!
 
 1. **Unduh & Pasang APK Pembantu di Ponsel Android Anda**:
-   - Unduh [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~5.2 MB) langsung ke ponsel Anda dan pasang (*install*).
+   - Unduh [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~6.6 MB) langsung ke ponsel Anda dan pasang (*install*).
 2. **Persiapan Singkat di TV (Cukup Sekali)**:
    - Pada remote TV: Buka **Settings (Pengaturan ⚙️)** $\rightarrow$ **System / Device Preferences** $\rightarrow$ **About (Tentang)** $\rightarrow$ Gulir ke **Build (Android TV OS Build)**.
    - Tekan tombol **OK remote sebanyak 7 kali berturut-turut** hingga muncul *"You are now a developer!"*.
@@ -204,7 +204,7 @@ Pengguna yang memasang file APK secara manual atau pindah rumah **TIDAK PERLUKAN
 ### C. Gambar Latar & Pilihan Kategori Wallpaper (4K Dynamic)
 * **Koleksi Tema Beragam**: Kini Anda bisa memilih kategori tema wallpaper favorit langsung dari layar utama melalui menu Pengaturan (ikon ⚙️):
   - 🌿 **Alam & Lanskap**: Lanskap alam 4K kelas dunia dengan info nama lokasi, negara, dan keterangan singkat tiap minggu.
-  - 🇮🇩 **Landmark & Destinasi Tersohor Indonesia**: 16 landmark dan destinasi ikonik Nusantara koleksi 4K dari Wikimedia Commons — Candi Borobudur, Kepulauan Pianemo Raja Ampat, Api Biru Kawah Ijen, Komodo, dan lainnya — diputar otomatis atau dipilih satu per satu.
+  - 🇮🇩 **Landmark & Destinasi Terkenal Indonesia**: 16 landmark dan destinasi ikonik Nusantara koleksi 4K dari Wikimedia Commons — Candi Borobudur, Kepulauan Pianemo Raja Ampat, Api Biru Kawah Ijen, Komodo, dan lainnya — diputar otomatis atau dipilih satu per satu.
   - 🏙️ **Pencakar Langit & Kota**: Pemandangan menara ikonik dunia (Jakarta, Manhattan, Chicago River, Dubai Marina, Hong Kong).
   - 🌌 **Luar Angkasa & Kosmos**: Galaksi, nebula, dan bintang yang menakjubkan.
   - 🌊 **Lautan & Pesisir Pantai**: Keindahan pantai berpasir putih, ombak, dan terumbu karang.
@@ -225,7 +225,8 @@ Pengguna yang memasang file APK secara manual atau pindah rumah **TIDAK PERLUKAN
 * **Ganti Gambar Seketika**: Pilih **⏭️ Ganti Gambar Sekarang** untuk beralih ke gambar berikutnya kapan saja.
 
 ### D. Screensaver StandBy & Auto-Off 2 Jam (Hemat Listrik)
-* **10 Menit Dibiarkan Tanpa Tombol**: TV otomatis masuk mode *StandBy Screensaver* berlatar hitam pekat (aman untuk mencegah *screen burn-in* di TV OLED/LED), menampilkan jam besar 110sp, tanggal Hijriah (contoh: `🌙 12 Jumadilawal 1448H`), dan sholat berikutnya.
+* **10 Menit Dibiarkan Tanpa Tombol**: TV otomatis masuk mode *StandBy Screensaver*. Layar tidak lagi hitam polos: jam bisa tampil sebagai Digital Terpusat, Analog Minimalis (dengan cincin kemajuan hari), Editorial Kiri, atau Bento Widget, di atas wallpaper yang diburamkan (bawaan baru), cahaya aurora mengikuti jam, atau hitam OLED. Tanggal, tanggal Hijriah, kapsul sholat berikutnya, dan baris cuaca bisa dinyalakan atau dimatikan satu per satu.
+* **Semua Diatur dari TV**: Buka **Settings (⚙️) $\rightarrow$ Mode StandBy** untuk memilih gaya, latar, elemen, format jam 12/24, ukuran digit, tingkat keredupan, mode malam merah, lama jeda sebelum screensaver muncul, lama jeda sebelum TV tidur, dan interval geser anti burn-in. Pilihan tersimpan di TV.
 * **2 Jam Setelah Itu**: Jika TV terus tidak disentuh, sistem akan mematikan layar TV (*sleep standby*) secara otomatis.
 * **Untuk Menyalakan Kembali**: Tekan tombol apa saja pada remote untuk membangunkan TV.
 
@@ -276,7 +277,7 @@ Glass TV Home dilengkapi mesin pembaruan pintar tanpa perlu komputer atau bantua
 
 Kini Anda tidak perlu aplikasi pihak ketiga yang rumit! Kami telah membangun aplikasi resmi **Glass TV Installer** khusus untuk ponsel dan tablet Android:
 
-* **Unduh APK Pembantu**: [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~5.2 MB)
+* **Unduh APK Pembantu**: [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~6.6 MB)
 
 #### Langkah Pemasangan:
 1. **Persiapan TV**:

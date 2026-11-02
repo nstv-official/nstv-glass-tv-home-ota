@@ -1,4 +1,4 @@
-﻿# Glass TV Home User Guide (Beginner-Friendly) 📺✨
+# Glass TV Home User Guide (Beginner-Friendly) 📺✨
 
 Welcome to **Glass TV Home**! This guide is crafted specifically for everyday users and beginners so you can easily install, debloat your TV for blazing-fast performance without ads, navigate seamlessly with your TV remote, and enjoy all smart ambient features effortlessly.
 
@@ -20,9 +20,9 @@ Glass TV Home is a modern, lightweight home launcher replacement for Android TV 
 
 Download the official release APKs based on your setup:
 * 📱 **For Android Phones & Tablets (Companion Installer App — Recommended)**:  
-  [**`glass-tv-installer.apk`** (5.2 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) — **Primary Recommendation!** Install directly to your TV and permanently lock the remote HOME button over Wi-Fi without needing a PC or cables.
+  [**`glass-tv-installer.apk`** (6.6 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) — **Primary Recommendation!** Install directly to your TV and permanently lock the remote HOME button over Wi-Fi without needing a PC or cables.
 * 📺 **For Android TV & Google TV (Main Launcher v4.0)**:  
-  [**`glass-tv-home.apk`** (800 KB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) — Latest release `v4.0.1` (Universal Inter typography, dynamic top-bar user animal avatar, self-adapting 1080p/4K engine, fail-safe wallpaper HTTP uploader).
+  [**`glass-tv-home.apk`** (1.5 MB)](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) — Latest release `v4.0.3` (Universal Inter typography, dynamic top-bar user animal avatar, self-adapting 1080p/4K engine, fail-safe wallpaper HTTP uploader).
 
 > [!CAUTION]
 > ### ⚠️ DO NOT RAW-SIDELOAD THE APK WITHOUT PROPER LAUNCHER SETUP!
@@ -47,7 +47,7 @@ Follow the guide based on what device you have, prioritized for simplicity:
 If you have an Android smartphone or tablet, this is the **easiest, fastest, and most convenient** method without needing any computer or cables!
 
 1. **Install Companion APK on Your Android Phone**:
-   - Download [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~5.2 MB) directly onto your Android device and install it.
+   - Download [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~6.6 MB) directly onto your Android device and install it.
 2. **Quick TV Setup (One-Time)**:
    - On your TV remote: Open **Settings ⚙️** $\rightarrow$ **About** $\rightarrow$ Scroll to **Build (Android TV OS Build)**.
    - Click the **OK button 7 times rapidly** until *"You are now a developer!"* pops up.
@@ -239,7 +239,12 @@ Users who install the APK manually or relocate **DO NOT NEED A COMPUTER OR AI** 
 * **Instant Shift**: Select **🔀 Next Wallpaper** anytime to immediately cycle to the next photo in your active category.
 
 ### D. StandBy Ambient Mode & Smart Power Saving
-* **10 Minutes Idle**: Enters an ambient OLED-safe black StandBy screensaver displaying large 110sp numerals, Islamic Hijri date, and the upcoming prayer window.
+* **10 Minutes Idle**: The StandBy screensaver appears — no longer a plain black clock. Choose between four clock
+  styles (centred digital, a minimalist analog dial with a day-progress ring, left-aligned editorial, and bento
+  cards), three backgrounds (today's wallpaper softened into frosted glass by default, an aurora glow that follows
+  the hour, or pure black OLED), and switch the date, Hijri date, next-prayer capsule, weather line and hint on or
+  off. Everything lives under **Settings (⚙️) → Mode StandBy**, together with the 12/24-hour format, digit size,
+  dimming, night mode, and the idle / sleep / anti-burn-in timings.
 * **2 Hours Later**: If left untouched, the TV display enters sleep standby (`GLOBAL_ACTION_LOCK_SCREEN`) to save power.
 * **Wake Up**: Press any button on the TV remote to wake the TV immediately.
 
@@ -287,7 +292,7 @@ You do **not** need a computer to install Glass TV Home.
 ### Method 1: Official 'Glass TV Installer' App (Zero-Config & Easiest) 🌟
 We built a dedicated companion installer app for Android phones and tablets that embeds the launcher and installs it over Wi-Fi:
 
-* **Download Companion App**: [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~5.2 MB)
+* **Download Companion App**: [**`glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (~6.6 MB)
 
 1. **Enable Debugging on TV**:
    - Go to TV **Settings ⚙️** $\rightarrow$ **About** $\rightarrow$ Click **Android TV OS Build** 7 times.

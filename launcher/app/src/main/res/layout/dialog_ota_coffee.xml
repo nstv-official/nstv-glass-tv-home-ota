@@ -204,11 +204,11 @@
                 android:fontFamily="@font/inter"
                 android:layout_marginBottom="8dp" />
 
-            <!-- QR Code Card -->
+            <!-- QR Code Card: tinggi mengikuti rasio gambar QRIS (933x1068) supaya tidak ada ruang kosong -->
             <ImageView
                 android:id="@+id/imgQrCoffee"
                 android:layout_width="150dp"
-                android:layout_height="185dp"
+                android:layout_height="172dp"
                 android:src="@drawable/qr_support"
                 android:scaleType="fitCenter"
                 android:contentDescription="QRIS @tv-home" />

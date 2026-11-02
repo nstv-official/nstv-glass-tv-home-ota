@@ -1,7 +1,7 @@
 {
-  "versionCode": 42,
-  "versionName": "4.0.2",
+  "versionCode": 43,
+  "versionName": "4.0.3",
   "apkUrl": "https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk",
-  "changelog": "🌙 Glass TV v4.0.2: Screensaver StandBy kini bisa diatur penuh lewat menu Mode StandBy — 4 gaya jam (Digital, Analog Minimalis dengan cincin kemajuan hari, Editorial Kiri, Bento Widget), 3 latar (wallpaper diburamkan sebagai bawaan baru, cahaya aurora sesuai jam, hitam OLED), sakelar elemen (kartu kaca, tanggal, hijriah, sholat, cuaca, petunjuk), format 12/24 jam, 4 ukuran digit, 4 tingkat keredupan, mode malam merah, serta pengaturan jeda screensaver, jeda tidur TV, dan geser anti burn-in. Kata Melayu yang tersisa (SEMASA) diganti Indonesia dan label destinasi menjadi Terkenal.",
+  "changelog": "☕ Glass TV v4.0.3: QRIS dukungan pengembang diganti dengan yang final atas nama DIGITAL PRODUCK. Bentuknya lebih pas kotak sehingga tidak lagi terlalu tinggi di dialog Pembaruan Sistem maupun di installer; tinggi gambar disesuaikan dengan rasio QRIS sehingga tidak ada ruang kosong. Ukuran APK ikut turun karena gambar QRIS baru lebih ringan.",
   "releaseDate": "2026-11-02"
 }

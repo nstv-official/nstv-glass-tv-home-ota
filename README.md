@@ -9,7 +9,7 @@ and come home to just your apps, with a new place to visit behind them every wee
 
 <p align="center">
   <a href="https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk">
-    <img src="https://img.shields.io/badge/Download_TV_Launcher-glass--tv--home.apk_(v4.0.2)-success?style=for-the-badge&logo=android" alt="Download Glass TV Home">
+    <img src="https://img.shields.io/badge/Download_TV_Launcher-glass--tv--home.apk_(v4.0.3)-success?style=for-the-badge&logo=android" alt="Download Glass TV Home">
   </a>
   &nbsp;
   <a href="https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk">
@@ -28,8 +28,8 @@ and come home to just your apps, with a new place to visit behind them every wee
 > 2. 📱 **Metode 2 (Tanpa PC — Aplikasi Android di Ponsel)**: Pasang [**`release/glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) di ponsel Anda. Hubungkan ke Wi-Fi yang sama, lalu tekan *Pasang Langsung ke TV* untuk mengunci tombol Home dalam 1 klik tanpa komputer!
 
 > 📦 **Official APK Downloads**:
-> - 📺 **Android TV / Google TV Launcher**: [**`release/glass-tv-home.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) (**v4.0.2** • ~1.6 MB)
-> - 📱 **Phone / Tablet Companion Installer**: [**`release/glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (**v1.0.0** • ~5.2 MB) — Kunci tombol Home TV langsung dari ponsel tanpa PC!
+> - 📺 **Android TV / Google TV Launcher**: [**`release/glass-tv-home.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-home.apk) (**v4.0.3** • ~1.5 MB)
+> - 📱 **Phone / Tablet Companion Installer**: [**`release/glass-tv-installer.apk`**](https://github.com/nstv-official/nstv-glass-tv-home-ota/raw/main/release/glass-tv-installer.apk) (**v1.0.0** • ~6.6 MB) — Kunci tombol Home TV langsung dari ponsel tanpa PC!
 >
 > 🤖 **AI Prompt & Audit Guide**:
 > - ⚡ **[AI_INSTALL_PROMPT.md](AI_INSTALL_PROMPT.md)**: Instruksi lengkap AI untuk audit TV (1080p vs 4K, DPI, IP LAN, stock launcher), debloat, dan kunci tombol Home.
@@ -50,6 +50,13 @@ every week.
   <img src="docs/screenshots/screensaver-live.png" width="19%" alt="StandBy Screensaver">
   <img src="docs/screenshots/wallpaper-dialog-live.png" width="19%" alt="4K Wallpapers & Phone QR Upload">
 </p>
+
+## What's New in Version 4.0.3
+
+- **The final donation QRIS.** The QR code shown under *Dukung Pengembang* — in the OTA dialog on the TV and in
+  the phone installer — is the registered one now, issued to **DIGITAL PRODUCK**. It is also square-ish instead of
+  a tall strip, so it stops stretching the card it sits in: both layouts size the picture to its real ratio
+  (933 × 1068) and the QR fills its frame with no empty band above or below. The lighter file also trims the APK.
 
 ## What's New in Version 4.0.2
 
